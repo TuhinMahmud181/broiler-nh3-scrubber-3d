@@ -19,7 +19,7 @@ h1{font:600 clamp(28px,3.6vw,44px)/1.08 Barlow,sans-serif;margin:0 0 10px;text-w
 .lede{color:var(--mute);margin:0;max-width:72ch}
 h2{font:600 22px/1.2 Barlow,sans-serif;margin:0 0 12px}
 .num{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-variant-numeric:tabular-nums}
-#stage{position:relative;height:clamp(420px,64vh,740px);background:linear-gradient(#8fbbe0,#dfe9ef 70%);overflow:hidden;border-block:1px solid var(--line)}
+#stage{position:relative;height:max(520px,min(62vw,86vh));background:linear-gradient(#8fbbe0,#dfe9ef 70%);overflow:hidden;border-block:1px solid var(--line)}
 #stage canvas{display:block;width:100%;height:100%}
 .lab{position:absolute;left:0;top:0;pointer-events:none;font:500 13px/1.2 Barlow,sans-serif;color:#14191f;background:rgba(255,255,255,.86);padding:3px 7px;border-radius:4px;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:0 1px 2px rgba(0,0,0,.15)}
 .lab b{font-weight:600}
@@ -53,24 +53,34 @@ th{font-weight:600;font-size:14px;color:var(--mute)}td.r,th.r{text-align:right;w
 .sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
 .tot{display:flex;flex-wrap:wrap;gap:8px 28px;margin:14px 0 0}.tot div{font-size:14px;color:var(--mute)}.tot b{display:block;font:600 24px "Barlow Condensed",sans-serif;color:var(--ink)}
 .scroll{overflow-x:auto}
+#molhud{position:absolute;left:12px;top:12px;max-width:min(420px,60%);background:rgba(10,16,22,.82);color:#e9edf1;border-radius:8px;padding:10px 12px;font-size:14px;opacity:0;visibility:hidden;pointer-events:none}
+#molhud .legend{display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:6px}#molhud .legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:4px;vertical-align:-1px}
+#molev{font:600 18px Barlow,sans-serif;min-height:26px;padding:2px 6px;border-radius:5px;margin:0 -6px 4px;transition:background .6s}
+#molev.g{background:rgba(34,180,85,.35);transition:none}#molev.o{background:rgba(255,122,0,.35);transition:none}#molev.y{background:rgba(232,180,0,.35);transition:none}#molev.b{background:rgba(53,99,233,.4);transition:none}
+@media(max-width:600px){#molhud{max-width:calc(100% - 24px);top:96px;font-size:12px}#molev{font-size:15px}}
+
 @media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}.lab{font-size:11px}.row{grid-template-columns:7.5em minmax(0,1fr) 4em}}
 </style><script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script></head><body>
 
 <header class="band"><div class="wrap">
 <h1>Acid scrubbing catches 92% of a cold flock's ammonia, but only 36% of a hot flock's</h1>
-<p class="lede">A 25,000-bird broiler house exhausts through a bank of spray scrubbers fed with sulphuric acid. In hot weather the fans move far more air than the bank can take, and the excess bypasses untreated. The plant below runs on your model (nh3_model.m, version 9); drag to orbit, scroll to zoom, and play the 49-day flock.</p>
+<p class="lede">A 25,000-bird broiler house exhausts through a bank of spray scrubbers fed with sulphuric acid. In hot weather the fans move far more air than the bank can take, and the excess bypasses untreated. The plant below runs on your model (nh3_model.m, version 9); drag to orbit, scroll to zoom, and play the 49-day flock. Zoom into a scrubber module or the recirculation tank to watch the reaction molecule by molecule.</p>
 </div></header>
 
 <section id="stage" aria-label="3D simulation of the broiler house and acid scrubber">
 <div id="nogl">3D view needs WebGL, which this browser has turned off. The numbers and charts below still run.</div>
 <div class="views" role="group" aria-label="Camera views">
-<button data-v="all">Whole plant</button><button data-v="house">Inside the house</button><button data-v="scrub">Scrubber</button><button data-v="tanks">Tanks and product</button>
+<button data-v="all">Whole plant</button><button data-v="house">Inside the house</button><button data-v="scrub">Scrubber</button><button data-v="tanks">Tanks and product</button><button data-v="mod">Molecules: scrubber</button><button data-v="tankm">Molecules: tank</button>
 </div>
+<div id="molhud"><div class="legend"><span><i style="background:#3563e9"></i>N</span><span><i style="background:#f2f2f2"></i>H</span><span><i style="background:#f2c430"></i>S</span><span><i style="background:#e53935"></i>O</span><span><i style="background:#22b455"></i>NH₄⁺</span><span><i style="background:#ff7a00"></i>H⁺</span><span><i style="background:#ffa65a"></i>acid droplet</span></div><div id="molev" class="ev"></div><div id="molct"></div></div>
 <div id="bar">
 <button id="play" aria-pressed="false">Play</button>
 <span id="dayv" class="num">Day 35</span>
 <label for="day" class="small" style="color:#cfd6dd">Bird age</label>
 <input id="day" type="range" min="1" max="49" value="35" aria-label="Bird age in days">
+<label for="msp" class="small" style="color:#cfd6dd">Molecule speed</label>
+<input id="msp" type="range" min="0" max="1.5" step="0.05" value="0.35" style="flex:0 1 140px" aria-label="Molecule speed">
+<output id="mspv" class="num" style="min-width:4.2em">0.35×</output>
 </div>
 </section>
 
@@ -132,7 +142,7 @@ const SM=S.reduce((a,b)=>a+b)/S.length;
 const QM={cold:0.59e6,mild:1.31e6,hot:2.50e6},TS={cold:20,mild:25,hot:31};
 const BIRDS=25000,MNH3=17.031,MAC=98.079,MAS=132.14,DCOL=0.356,VMAX=4,Z=1.65;
 const lerp1=(x,xs,ys)=>{for(let i=0;i<xs.length-1;i++)if(x<=xs[i+1])return ys[i]+(ys[i+1]-ys[i])*(x-xs[i])/(xs[i+1]-xs[i]);return ys.at(-1)};
-const st={season:'hot',n:30,stages:3,P:0.62,day:35,playing:false};
+const st={season:'hot',n:30,stages:3,P:0.62,day:35,playing:false,msp:0.35};
 function point(d,season,n,stages,P){
   const T=TS[season],Vm=8.314462*(T+273.15)/101325,A=n*Math.PI/4*DCOL**2,Qcap=A*VMAX*86400;
   const E=0.031*d*BIRDS/1000,Q=QM[season]*S[d-1]/SM;
@@ -219,6 +229,7 @@ $('mods').addEventListener('input',e=>{st.n=+e.target.value;$('modsv').textConte
 $('stg').addEventListener('input',e=>{st.stages=+e.target.value;$('stgv').textContent=st.stages;recompute()});
 $('pr').addEventListener('input',e=>{st.P=+e.target.value;$('prv').textContent=st.P.toFixed(2)+' MPa';recompute()});
 $('day').addEventListener('input',e=>{st.day=+e.target.value;updateText()});
+$('msp').addEventListener('input',e=>{st.msp=+e.target.value;$('mspv').textContent=st.msp?st.msp.toFixed(2)+'×':'paused'});
 $('reset').addEventListener('click',()=>{st.n=30;st.stages=3;st.P=0.62;$('mods').value=30;$('stg').value=3;$('pr').value=0.62;$('modsv').textContent=30;$('stgv').textContent=3;$('prv').textContent='0.62 MPa';recompute()});
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const play=$('play');
@@ -235,7 +246,7 @@ const R=new THREE.WebGLRenderer({antialias:true,alpha:true});R.setPixelRatio(Mat
 stage.prepend(R.domElement);
 const scene=new THREE.Scene();scene.fog=new THREE.Fog(0xcfe0ec,70,200);
 const cam=new THREE.PerspectiveCamera(42,1,0.1,400);
-const ctl=new THREE.OrbitControls(cam,R.domElement);ctl.enableDamping=true;ctl.maxPolarAngle=1.5;ctl.minDistance=6;ctl.maxDistance=150;
+const ctl=new THREE.OrbitControls(cam,R.domElement);ctl.enableDamping=true;ctl.maxPolarAngle=1.5;ctl.minDistance=0.4;ctl.maxDistance=150;
 scene.add(new THREE.HemisphereLight(0xeaf3ff,0x8c8270,0.7));
 const sun=new THREE.DirectionalLight(0xfff3dd,0.85);sun.position.set(30,60,40);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
 Object.assign(sun.shadow.camera,{left:-70,right:70,top:40,bottom:-40,far:160});scene.add(sun);
@@ -315,20 +326,20 @@ function buildBank(){
   cyl(0.45,0.06,steel,x,CY0+0.03,z,bank);
   const me=cyl(0.45,0.22,M(0x3d444b),x,CY0+CH-0.11,z,bank);
   for(let k=0;k<st.stages;k++)cyl(0.07,0.12,M(0xd9661f,{metalness:.3}),x,stageY(k),z,bank,10);
-  mods.push({x,z})}
+  mods.push({x,z,m,me})}
  const man=M(0xd9661f,{roughness:.5});
  for(let r=0;r<rows;r++){const p=cyl(0.07,COLS*SPZ,man,BX+r*SPX,CY0+CH+0.35,0,bank);p.rotation.x=Math.PI/2}
  const h=cyl(0.1,39-BX,man,(BX+39)/2,CY0+CH+0.35,-5.4,bank);h.rotation.z=Math.PI/2;
  for(let r=0;r<rows;r++){const s=cyl(0.06,0.4,man,BX+r*SPX,CY0+CH+0.35,-5.2,bank);s.rotation.x=Math.PI/2}
  P.ret[0][0]=bankEnd+0.65;pipe(P.ret,0xa4521c,0.07,bank);
- makeDrops();place();
+ makeDrops();place();if(window.__pickMod)window.__pickMod();
 }
 // ----- tanks
 const TX=40;
 const tank=(r,h,col,liqCol,x,z,lvl)=>{const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
  const shell=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,32,1,true),M(col,{transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false}));shell.position.y=h/2+0.2;g.add(shell);
  cyl(r+0.05,0.12,M(0x6d757d,{metalness:.4}),0,h+0.26,0,g,32);cyl(r+0.05,0.2,M(0x6d757d,{metalness:.4}),0,0.1,0,g,32);
- const l=cyl(r-0.06,1,M(liqCol,{roughness:.3,transparent:true,opacity:.9}),0,0,0,g,32);l.userData.h=h;l.scale.y=h*lvl;l.position.y=0.2+h*lvl/2;return l};
+ const l=cyl(r-0.06,1,M(liqCol,{roughness:.3,transparent:true,opacity:.9,depthWrite:false}),0,0,0,g,32);l.userData.h=h;l.userData.shell=shell;l.scale.y=h*lvl;l.position.y=0.2+h*lvl/2;return l};
 const recL=tank(1.25,2.6,0xd9661f,0xf08a3c,TX,-3.2,0.7);
 const acidL=tank(0.75,2.2,0x8c2d14,0x9b3216,TX+4,-4.6,0.65);
 const watL=tank(0.75,2.2,0x1557a6,0x6aa6e0,TX+4,-1.8,0.75);
@@ -367,17 +378,128 @@ lab('8 tunnel exhaust fans','air',[X1,3.6,4.5]);
 const lBy=lab('<b>Bypass</b>, untreated','nh3',[21.6,4.6,0]);
 const lBank=lab('<b>Spray scrubber bank</b>','acid',[31,6.3,0]);
 lab('Mist eliminators','air',[30,5.4,4.6],1);
+const lZoom=lab('Zoom in: molecules inside','acid',[BX,CY0+CH+0.9,4.5]);
 lab('Recirculation tank · pH 3','acid',[TX-0.5,3.4,-2.4],1);
 lab('Pump','acid',[TX,1.7,-6.2],1);
 lab('H₂SO₄','acid',[TX+4,2.9,-4.6],1);
 lab('Make-up water','air',[TX+4.6,2.9,-1.6],1);
 lab('<b>Ammonium sulphate</b> product','prod',[TX+4.5,4.0,3.6]);
+// ===================== molecules: inside one scrubber module and the recirculation tank =====================
+const MS=0.43/7,TS2=0.12;
+const molG=new THREE.Group(),tankG=new THREE.Group();molG.scale.setScalar(MS);tankG.scale.setScalar(TS2);tankG.position.set(TX,0.25,-3.2);scene.add(molG,tankG);
+const fm=[];const fmat=(c,o={})=>{const m=new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.35,transparent:true},o));m.userData.o=o.opacity===undefined?1:o.opacity;fm.push(m);return m};
+const MA={N:fmat(0x3563e9),H:fmat(0xf2f2f2),S:fmat(0xf2c430),O:fmat(0xe53935),Nq:fmat(0x22b455,{emissive:0x0f6a2c,emissiveIntensity:.9}),Hp:fmat(0xfff3e0,{emissive:0xff7a00,emissiveIntensity:1}),
+ N2:fmat(0x9db0d6,{opacity:.4,depthWrite:false}),O2:fmat(0xeaa0a0,{opacity:.4,depthWrite:false}),Wh:fmat(0xffffff,{opacity:.5,depthWrite:false}),Wo:fmat(0xef6f6f,{opacity:.5,depthWrite:false}),Dr:fmat(0xffa65a,{opacity:.2,depthWrite:false})};
+const SG=new THREE.SphereGeometry(1,14,10);
+const at=(g,m,r,x=0,y=0,z=0)=>{const a=new THREE.Mesh(SG,m);a.scale.setScalar(r);a.position.set(x,y,z);g.add(a);return a};
+const TET=[[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]].map(v=>new THREE.Vector3(...v).normalize());
+const mkNH3=()=>{const g=new THREE.Group();g.userData.N=at(g,MA.N,0.42);g.userData.H=TET.map((d,i)=>{const h=at(g,MA.H,0.24,d.x*.5,d.y*.5,d.z*.5);h.visible=i>0;return h});return g};
+const mkNH4=()=>{const g=mkNH3();g.userData.H[0].visible=true;g.userData.N.material=MA.Nq;return g};
+const mkSO4=()=>{const g=new THREE.Group();at(g,MA.S,0.42);TET.forEach(d=>at(g,MA.O,0.34,d.x*.62,d.y*.62,d.z*.62));return g};
+const mkHp=()=>{const g=new THREE.Group();at(g,MA.Hp,0.24);return g};
+const mkH2O=()=>{const g=new THREE.Group();at(g,MA.Wo,0.3);at(g,MA.Wh,0.18,.3,.2,0);at(g,MA.Wh,0.18,-.3,.2,0);return g};
+const mkDi=m=>{const g=new THREE.Group();at(g,m,0.3,-.26,0,0);at(g,m,0.3,.26,0,0);return g};
+const mkH2SO4=()=>{const g=mkSO4();g.userData.Hs=[0,3].map(i=>at(g,MA.H,0.22,TET[i].x,TET[i].y,TET[i].z));return g};
+const rin=r=>{let v;do{v=new THREE.Vector3(Math.random()*2-1,Math.random()*2-1,Math.random()*2-1)}while(v.lengthSq()>1);return v.multiplyScalar(r)};
+const rdisc=r=>{const a=Math.random()*6.283,q=Math.sqrt(Math.random())*r;return [Math.cos(a)*q,Math.sin(a)*q]};
+const RG=new THREE.RingGeometry(0.55,0.75,32),fls=[];
+function flash(par,p,col){const m=new THREE.Mesh(RG,new THREE.MeshBasicMaterial({color:col,transparent:true,side:THREE.DoubleSide,depthWrite:false}));m.position.copy(p);par.add(m);fls.push({m,par,t:0})}
+// HUD
+const hud=$('molhud'),hev=$('molev'),hct=$('molct');let evT=0;
+function ev(t,c){hev.innerHTML=t;hev.className='ev '+c;evT=1.6}
+// --- module (units: molecule scale; radius 7 = 0.43 m glass)
+const MRd=6.2,MH=CH/MS,NZm=k=>(stageY(k)-CY0)/MS;
+let sel=null;const glassSel=M(0xcfe6f7,{transparent:true,opacity:.28,roughness:.1,depthWrite:false});
+function pickMod(){if(sel&&sel.m)sel.m.material=glass;if(sel&&sel.me)sel.me.visible=true;
+ let b=mods[0];for(const m of mods)if(m.x<b.x-1e-6||(Math.abs(m.x-b.x)<1e-6&&m.z>b.z))b=m;sel=b;if(!b)return;b.m.material=glassSel;molG.position.set(b.x,CY0,b.z);
+ window.__modV=[[b.x+0.9,CY0+2.5,b.z+2.1],[b.x,CY0+2.1,b.z]]}
+window.__pickMod=pickMod;pickMod();
+const gas=[],mdrops=[],pool=[],out=[];let cnt={cap:0,slip:0},sig='';
+function addItem(d,k,g){const p=rin(0.85);g.position.copy(p);d.g.add(g);d.items.push({k,g,home:p,ph:Math.random()*6.28});}
+function resetDrop(d){for(const it of d.items)d.g.remove(it.g);d.items=[];
+ const y=NZm((Math.random()*st.stages)|0);d.g.position.set((Math.random()-.5)*.5,y-0.6,(Math.random()-.5)*.5);
+ const a=Math.random()*6.283,s=1.4+Math.random()*2.6;d.v=new THREE.Vector3(Math.cos(a)*s,-6-Math.random()*3,Math.sin(a)*s);
+ addItem(d,'w',mkH2O());addItem(d,'w',mkH2O());for(let i=0;i<4;i++)addItem(d,'h',mkHp());addItem(d,'s',mkSO4());addItem(d,'s',mkSO4())}
+function syncDrops(){const want=5*st.stages;while(mdrops.length<want){const g=new THREE.Group();at(g,MA.Dr,1.3);molG.add(g);const d={g,items:[]};resetDrop(d);d.g.position.y=Math.random()*NZm(0);mdrops.push(d)}
+ while(mdrops.length>want){const d=mdrops.pop();molG.remove(d.g)}}
+function spawnGas(kind,anyY){const g=kind==='nh3'?mkNH3():mkDi(kind==='n2'?MA.N2:MA.O2);const [x,z]=rdisc(MRd);g.position.set(x,anyY?Math.random()*MH:0.5+Math.random()*3,z);g.rotation.set(Math.random()*6,Math.random()*6,0);molG.add(g);
+ const o={kind,g,st:'gas',w:Math.random()*6.28};if(kind==='nh3'){o.cap=Math.random()<F[st.day-1].eta;o.capY=3+Math.random()*(NZm(0)-3)}gas.push(o)}
+for(let i=0;i<70;i++)spawnGas(i%5===0?'o2':'n2',1);
+function toPool(g,wp){molG.worldToLocal(wp);g.position.copy(wp);molG.add(g);const [x,z]=rdisc(MRd);pool.push({g,to:new THREE.Vector3(x,-0.6+Math.random()*0.9,z)});
+ while(pool.length>30){const o=pool.shift();molG.remove(o.g)}}
+function protonate(d,it,quiet){if(it.k!=='nh3')return;const u=it.g.userData;u.H[0].visible=true;u.N.material=MA.Nq;if(it.hp){d.g.remove(it.hp.g);it.hp.k='gone'}it.k='a';
+ if(!quiet){d.g.updateMatrixWorld(true);const wp=new THREE.Vector3();it.g.getWorldPosition(wp);molG.worldToLocal(wp);flash(molG,wp,0x22c55e);ev('NH₃ + H⁺ → <b>NH₄⁺</b>','g')}}
+function stepMod(dt){
+ const p=F[st.day-1],U=(2.2+1.6*p.v)*3,nT=Math.max(6,Math.min(60,Math.round(4+p.C*1.6)));
+ let nh=0;for(const o of gas)if(o.kind==='nh3'&&o.st==='gas')nh++;if(nh<nT&&Math.random()<dt*8)spawnGas('nh3');
+ for(let i=gas.length-1;i>=0;i--){const o=gas[i],g=o.g;
+  if(o.st==='gas'){g.position.y+=U*dt;o.w+=dt;g.position.x+=Math.sin(o.w*1.7)*dt*.5;g.position.z+=Math.cos(o.w*1.3)*dt*.5;g.rotation.y+=dt;
+   const r=Math.hypot(g.position.x,g.position.z);if(r>MRd){g.position.x*=MRd/r;g.position.z*=MRd/r}
+   if(o.kind==='nh3'&&o.cap&&g.position.y>=o.capY){let best=null,bd=1e9;for(const d of mdrops){const q=d.g.position.distanceToSquared(g.position);if(q<bd){bd=q;best=d}}if(best){o.st='seek';o.d=best;o.off=rin(0.7);ev('NH₃ dissolves into an acid droplet','b')}}
+   if(g.position.y>MH+2){if(o.kind==='nh3'){cnt.slip++;ev('NH₃ slips through untreated','y');molG.remove(g);gas.splice(i,1)}else{const [x,z]=rdisc(MRd);g.position.set(x,0.5,z)}}}
+  else{const tgt=o.d.g.position.clone().add(o.off),dv=tgt.sub(g.position),L=dv.length();
+   if(L<0.35){molG.remove(g);g.position.copy(o.off);o.d.g.add(g);o.d.items.push({k:'nh3',g,home:o.off.clone(),ph:0,t:0});gas.splice(i,1);cnt.cap++}
+   else g.position.addScaledVector(dv.normalize(),Math.min(L,dt*14))}}
+ for(const d of mdrops){d.g.position.addScaledVector(d.v,dt);d.v.x*=1-dt*.9;d.v.z*=1-dt*.9;
+  const r=Math.hypot(d.g.position.x,d.g.position.z);if(r>MRd-1.2){d.g.position.x*=(MRd-1.2)/r;d.g.position.z*=(MRd-1.2)/r;d.v.x*=-.4;d.v.z*=-.4}
+  for(const it of d.items){it.ph+=dt*2;if(it.k!=='used')it.g.position.set(it.home.x+Math.sin(it.ph)*.05,it.home.y+Math.cos(it.ph*1.3)*.05,it.home.z);
+   if(it.k==='nh3'){it.t+=dt;if(!it.hp&&it.t>0.3){const h=d.items.find(x=>x.k==='h');if(h){h.k='used';it.hp=h}}
+    if(it.hp){it.hp.g.position.lerp(it.g.position,Math.min(1,dt*6));if(it.hp.g.position.distanceTo(it.g.position)<0.35)protonate(d,it)}}}
+  d.items=d.items.filter(x=>x.k!=='gone');
+  if(d.g.position.y<0.6){d.g.updateMatrixWorld(true);let any=0;
+   for(const it of d.items){if(it.k==='nh3')protonate(d,it,true);if(it.k==='a'||it.k==='s'){if(it.k==='a')any=1;const wp=new THREE.Vector3();it.g.getWorldPosition(wp);d.g.remove(it.g);toPool(it.g,wp);it.k='gone'}}
+   if(any)ev('Droplet drains: NH₄⁺ + SO₄²⁻ into the sump','g');resetDrop(d)}}
+ for(const o of pool){o.g.position.lerp(o.to,Math.min(1,dt*1.5));o.g.rotation.y+=dt*.5}
+}
+// --- recirculation tank (units: radius about 9.8, liquid 1..14)
+const TR=8.6,TT=14,tion=[],tmov=[];let tAcid=0,tRet=0;
+for(let i=0;i<26;i++){const g=i%3===2?mkSO4():mkNH4();const [x,z]=rdisc(TR);g.position.set(x,1+Math.random()*(TT-1),z);tankG.add(g);tion.push({g,w:Math.random()*6})}
+const TP={acid:[new THREE.Vector3(22,18,-0.8),new THREE.Vector3(9,17,-0.8),new THREE.Vector3(3,10,0)],ret:[new THREE.Vector3(-14,0.8,0),new THREE.Vector3(-6,4,0)],
+ pump:new THREE.Vector3(0,1.2,-12),prod:new THREE.Vector3(11,2,6)};
+function tmove(g,pts,done){tankG.add(g);g.position.copy(pts[0]);tmov.push({g,pts:pts.slice(1),done})}
+function stepTank(dt){const p=F[st.day-1];
+ for(const o of tion){o.w+=dt;o.g.position.x+=Math.sin(o.w*.9)*dt*.6;o.g.position.y+=Math.cos(o.w*.7)*dt*.4;o.g.position.z+=Math.sin(o.w*1.1)*dt*.6;o.g.rotation.y+=dt*.4;
+  const r=Math.hypot(o.g.position.x,o.g.position.z);if(r>TR){o.g.position.x*=TR/r;o.g.position.z*=TR/r}o.g.position.y=Math.min(TT,Math.max(1,o.g.position.y))}
+ tAcid+=dt;if(tAcid>3.2/Math.max(.25,Math.min(1.6,p.acid/15))){tAcid=0;const g=mkH2SO4();
+  tmove(g,TP.acid,()=>{g.updateMatrixWorld(true);for(const h of g.userData.Hs){const wp=new THREE.Vector3();h.getWorldPosition(wp);g.remove(h);tankG.worldToLocal(wp);const hp=mkHp();hp.position.copy(wp);tankG.add(hp);tion.push({g:hp,w:Math.random()*6})}
+   flash(tankG,g.position.clone(),0xff7a00);ev('H₂SO₄ → <b>2 H⁺ + SO₄²⁻</b> (acid dosing)','o');tion.push({g,w:0})})}
+ tRet+=dt;if(tRet>2.8/Math.max(.2,Math.min(1.5,p.cap/6))){tRet=0;const g=mkNH4();tmove(g,TP.ret,()=>{tion.push({g,w:0});ev('NH₄⁺ arrives from the scrubber sump','g')})}
+ if(tion.length>34){const i=tion.findIndex(o=>o.g.userData.N);const o=tion.splice(i>=0?i:0,1)[0];tmove(o.g,[o.g.position.clone(),TP.prod],()=>tankG.remove(o.g));if(Math.random()<.5)ev('Draw-off: ammonium sulphate to the product tank','g')}
+ const hi=tion.findIndex(o=>!o.g.userData.N&&o.g.children.length===1);if(hi>=0&&Math.random()<dt*0.5){const o=tion.splice(hi,1)[0];tmove(o.g,[o.g.position.clone(),TP.pump],()=>tankG.remove(o.g));ev('Pump sends H⁺ back to the nozzles','o')}
+ for(let i=tmov.length-1;i>=0;i--){const m=tmov[i],t=m.pts[0],dv=t.clone().sub(m.g.position),L=dv.length();
+  if(L<0.4){m.pts.shift();if(!m.pts.length){tmov.splice(i,1);m.done&&m.done()}}else m.g.position.addScaledVector(dv.normalize(),Math.min(L,dt*7))}
+}
+// fade in as the camera comes close; step only what is visible
+const cM=new THREE.Vector3(),cT=new THREE.Vector3(TX,1.3,-3.2);let aPrev=-1;
+function molUpdate(dt){if(!sel)return;
+ if(mdrops.length!==5*st.stages)syncDrops();
+ const s=st.season+st.n+st.stages+st.P;if(s!==sig){sig=s;cnt={cap:0,slip:0};for(const d of mdrops)resetDrop(d)}
+ cM.set(sel.x,CY0+2,sel.z);const aM=Math.min(1,Math.max(0,(6.5-cam.position.distanceTo(cM))/3.5)),aT=Math.min(1,Math.max(0,(7.5-cam.position.distanceTo(cT))/3.5)),a=Math.max(aM,aT);
+ if(Math.abs(a-aPrev)>0.01){aPrev=a;for(const m of fm)m.opacity=m.userData.o*a;hud.style.opacity=a;hud.style.visibility=a>0.02?'visible':'hidden'}
+ molG.visible=aM>0.02;tankG.visible=aT>0.02;ep.material.opacity=0.85*(1-0.9*aM);if(drops)drops.material.opacity=0.85*(1-0.9*aM);lZoom.d.style.display=aM>0.4?'none':'';glassSel.opacity=0.28*(1-0.75*aM);
+ recL.material.opacity=0.9*(1-0.8*aT);recL.userData.shell.material.opacity=0.35*(1-0.7*aT);
+ const mdt=dt*st.msp;if(mdt>0){if(aM>0.02)stepMod(mdt);if(aT>0.02)stepTank(mdt)}
+ for(let i=fls.length-1;i>=0;i--){const f=fls[i];f.t+=mdt||0;f.m.scale.setScalar(1+f.t*4);f.m.material.opacity=Math.max(0,1-f.t/0.7)*a;f.m.lookAt(cam.position);if(f.t>0.7){f.par.remove(f.m);f.m.material.dispose();fls.splice(i,1)}}
+ if(evT>0){evT-=dt;if(evT<=0)hev.className='ev'}
+ const tot=cnt.cap+cnt.slip;hct.innerHTML=aM>0.02?`In this module: NH₃ caught <b>${cnt.cap}</b> · slipped <b>${cnt.slip}</b>${tot?` · ${fmt(100*cnt.cap/tot,0)}% caught`:''} · model η <b>${fmt(100*F[st.day-1].eta,1)}%</b>`:'Recirculation tank, pH 3: NH₄⁺, SO₄²⁻ and H⁺ in solution'}
+syncDrops();
+
 // ----- camera views
-const V={all:[[2,30,48],[10,1,0]],house:[[-30,6,14],[-12,1,0]],scrub:[[22,12,20],[32,2.6,-1]],tanks:[[36,9,16],[42,1.6,-0.5]]};
-let tw=null;function view(k){const [p,t]=V[k];tw={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),u:0}}
+const V={all:[[2,30,48],[10,1,0]],house:[[-30,6,14],[-12,1,0]],scrub:[[22,12,20],[32,2.6,-1]],tanks:[[36,9,16],[42,1.6,-0.5]],tankm:[[TX+1.9,2.9,-0.9],[TX,1.2,-3.2]]};
+let tw=null;function view(k){const [p,t]=k==='mod'?window.__modV:V[k];tw={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),u:0,slow:k==='mod'||k==='tankm'}}
 cam.position.set(...V.all[0]);ctl.target.set(...V.all[1]);
 document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click',()=>view(b.dataset.v)));
-function resize(){const w=stage.clientWidth,h=stage.clientHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();if(w<600&&!tw&&cam.position.z===48){cam.position.set(2,52,84)}}
+// fit the whole plant (house inlet x=-40 to product tank x=46) to the view's shape
+let touched=false;ctl.addEventListener('start',()=>{touched=true});
+function fitAll(){const narrow=cam.aspect<1,dir=(narrow?new THREE.Vector3(0.5,0.6,0.62):new THREE.Vector3(0.36,0.44,0.82)).normalize(),t=new THREE.Vector3(narrow?6:5,1.2,0),c=new THREE.PerspectiveCamera(cam.fov,cam.aspect,0.1,800),v=new THREE.Vector3();
+ const pts=[];for(const x of [-41,47])for(const y of [0,6.5])for(const z of [-6.5,6.5])pts.push([x,y,z]);
+ const barF=Math.min(0.45,(document.getElementById('bar').offsetHeight+24)/Math.max(1,stage.clientHeight)*2);
+ const fits=d=>{c.position.copy(t).addScaledVector(dir,d);c.lookAt(t);c.updateMatrixWorld();c.updateProjectionMatrix();
+  return pts.every(q=>{v.set(...q).project(c);return Math.abs(v.x)<0.96&&v.y<0.82&&v.y>-1+barF+0.02})};
+ let lo=10,hi=400;for(let i=0;i<30;i++){const m=(lo+hi)/2;if(fits(m))hi=m;else lo=m}
+ V.all=[t.clone().addScaledVector(dir,hi).toArray(),t.toArray()]}
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();fitAll();
+ if(!touched&&!tw){cam.position.set(...V.all[0]);ctl.target.set(...V.all[1])}}
 const ro2=new ResizeObserver(resize);ro2.observe(stage);
 function place(){const p=F[st.day-1];st.f=p.f;st.eta=p.eta;
  lBank.d.innerHTML=`<b>Spray scrubber bank</b> · ${st.n} modules × ${st.stages}`;
@@ -416,8 +538,8 @@ function frame(now){const rdt=Math.min(0.5,(now-last)/1000),dt=Math.min(0.05,rdt
  // pipe tokens
  for(const k of tokens){const rate=k.path===P.acid?Math.min(1,p.acid/60):k.path===P.prod?Math.min(1,p.prodL/400):k.path===P.wat?Math.min(1,(p.evapL+p.prodL)/2500):0.8;
   k.u=(k.u+dt*0.25*rate)%1;k.m.visible=rate>0.005;k.m.position.set(...along(k.path,k.u))}
- if(tw){tw.u=Math.min(1,tw.u+rdt*1.2);const e=tw.u<.5?2*tw.u*tw.u:1-(-2*tw.u+2)**2/2;cam.position.lerpVectors(tw.p0,tw.p1,e);ctl.target.lerpVectors(tw.t0,tw.t1,e);if(tw.u>=1)tw=null}
- ctl.update();R.render(scene,cam);
+ if(tw){tw.u=Math.min(1,tw.u+rdt*(tw.slow?0.35:1.2));const e=tw.u<.5?2*tw.u*tw.u:1-(-2*tw.u+2)**2/2;cam.position.lerpVectors(tw.p0,tw.p1,e);ctl.target.lerpVectors(tw.t0,tw.t1,e);if(tw.u>=1)tw=null}
+ ctl.update();molUpdate(dt);if(sel)lZoom.p.set(sel.x,CY0+CH+0.9,sel.z);R.render(scene,cam);
  const w=stage.clientWidth,h=stage.clientHeight,v=new THREE.Vector3();
  for(const l of labs){const dist=cam.position.distanceTo(l.p);v.copy(l.p).project(cam);const vis=v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05&&!(l.minor&&dist>30)&&dist<110;if(l.d.style.display==='none'&&l===lBy)continue;l.d.style.visibility=vis?'visible':'hidden';l.d.style.transform=`translate(${(v.x*.5+.5)*w}px,${(-v.y*.5+.5)*h}px) translate(-50%,-100%)`}
  requestAnimationFrame(frame)}
