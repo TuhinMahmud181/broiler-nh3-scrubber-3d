@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Broiler NH₃ acid scrubber</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE: an engineer's process explainer — exact, calm, every number from the model.
+   IDEA: a plant's control-room mimic: the live 3D plant, then a stream table like a PFD.
+   PICTURE: the broiler house, fans, scrubber bank, tanks and product, all running at the chosen bird age.
+   COLOUR and TYPE: the paper's own Fig. 1 colours: air blue, acid orange, product green, NH₃ amber; Barlow + Barlow Condensed numerals.
+   LAYOUT: title, full-width 3D stage with play bar, then readouts + charts beside controls + chemistry, then stream table. */
+:root{color-scheme:light dark;--bg:light-dark(#ffffff,#0f1317);--ink:light-dark(#14191f,#e9edf1);--mute:light-dark(#56606b,#9aa6b2);--line:light-dark(#dde2e7,#2a323b);--card:light-dark(#f5f7f9,#161c22);--air:#1557a6;--acid:#d9661f;--prod:#2e8b3e;--nh3:#c99500}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,system-ui,sans-serif;overflow-x:clip}
+.band{padding:clamp(20px,3vw,40px) max(4vw,16px)}
+.wrap{max-width:1240px;margin:0 auto}
+h1{font:600 clamp(28px,3.6vw,44px)/1.08 Barlow,sans-serif;margin:0 0 10px;text-wrap:balance;max-width:28ch}
+.lede{color:var(--mute);margin:0;max-width:72ch}
+h2{font:600 22px/1.2 Barlow,sans-serif;margin:0 0 12px}
+.num{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-variant-numeric:tabular-nums}
+#stage{position:relative;height:clamp(420px,64vh,740px);background:linear-gradient(#8fbbe0,#dfe9ef 70%);overflow:hidden;border-block:1px solid var(--line)}
+#stage canvas{display:block;width:100%;height:100%}
+.lab{position:absolute;left:0;top:0;pointer-events:none;font:500 13px/1.2 Barlow,sans-serif;color:#14191f;background:rgba(255,255,255,.86);padding:3px 7px;border-radius:4px;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.lab b{font-weight:600}
+.lab.air{border-left:3px solid var(--air)}.lab.acid{border-left:3px solid var(--acid)}.lab.prod{border-left:3px solid var(--prod)}.lab.nh3{border-left:3px solid var(--nh3)}
+#bar{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:rgba(15,19,23,.82);color:#fff;padding:8px 12px;border-radius:8px}
+#bar label{font-size:14px}#bar input[type=range]{flex:1 1 220px;accent-color:#f0a33a;height:32px}
+#dayv{font-size:24px;min-width:8.5em}
+button{font:500 15px Barlow,sans-serif;min-height:44px;padding:0 16px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid #f0a33a;outline-offset:2px}
+#play{background:#f0a33a;color:#14191f;border:0;min-width:92px;font-weight:600}
+.views{position:absolute;top:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.views button{min-height:38px;background:rgba(255,255,255,.9);color:#14191f;border:0}
+#nogl{position:absolute;inset:0;display:none;place-items:center;padding:24px;text-align:center}
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:clamp(20px,3vw,40px)}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.kpi{background:var(--bg);padding:10px 14px}.kpi .v{font-size:30px;line-height:1.1}.kpi .k{font-size:13px;color:var(--mute)}
+.kpi.big .v{font-size:40px;color:var(--air)}
+.fig{position:relative;height:200px;margin-bottom:8px}.fig>svg{position:absolute;inset:0;width:100%;height:100%}
+.figcap{font-size:14px;color:var(--mute);margin:0 0 18px}
+.ctrl{display:grid;gap:14px;margin-bottom:24px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.row{display:grid;grid-template-columns:9.5em minmax(0,1fr) 4.5em;gap:10px;align-items:center}
+.row input{width:100%;accent-color:var(--acid);height:32px}.row output{text-align:right}
+.chem{background:var(--card);border-radius:8px;padding:16px 18px}
+.chem ol{margin:0;padding-left:1.3em}.chem li{margin-bottom:10px}
+.eq{font-family:"Barlow Condensed",sans-serif;font-size:19px;font-weight:600;display:block}
+.small{font-size:14px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:15px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{font-weight:600;font-size:14px;color:var(--mute)}td.r,th.r{text-align:right;white-space:nowrap}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+.tot{display:flex;flex-wrap:wrap;gap:8px 28px;margin:14px 0 0}.tot div{font-size:14px;color:var(--mute)}.tot b{display:block;font:600 24px "Barlow Condensed",sans-serif;color:var(--ink)}
+.scroll{overflow-x:auto}
+@media(max-width:600px){table{font-size:13px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px}.stack td{display:flow-root;border:0;padding:3px 0;padding-inline-start:8em;text-align:start}.stack td::before{content:attr(data-l);float:inline-start;width:7.5em;margin-inline-start:-8em;white-space:normal;color:var(--mute)}.stack td:empty{display:none}.lab{font-size:11px}.row{grid-template-columns:7.5em minmax(0,1fr) 4em}}
+</style><script>new MutationObserver(()=>{for(const c of document.querySelectorAll('.stack td:not([data-l])')){let i=0,p=c;while(p=p.previousElementSibling)i+=p.colSpan;c.dataset.l=c.closest('table').rows[0].cells[i]?.textContent||''}}).observe(document,{childList:true,subtree:true})</script></head><body>
+
+<header class="band"><div class="wrap">
+<h1>Acid scrubbing catches 92% of a cold flock's ammonia, but only 36% of a hot flock's</h1>
+<p class="lede">A 25,000-bird broiler house exhausts through a bank of spray scrubbers fed with sulphuric acid. In hot weather the fans move far more air than the bank can take, and the excess bypasses untreated. The plant below runs on your model (nh3_model.m, version 9); drag to orbit, scroll to zoom, and play the 49-day flock.</p>
+</div></header>
+
+<section id="stage" aria-label="3D simulation of the broiler house and acid scrubber">
+<div id="nogl">3D view needs WebGL, which this browser has turned off. The numbers and charts below still run.</div>
+<div class="views" role="group" aria-label="Camera views">
+<button data-v="all">Whole plant</button><button data-v="house">Inside the house</button><button data-v="scrub">Scrubber</button><button data-v="tanks">Tanks and product</button>
+</div>
+<div id="bar">
+<button id="play" aria-pressed="false">Play</button>
+<span id="dayv" class="num">Day 35</span>
+<label for="day" class="small" style="color:#cfd6dd">Bird age</label>
+<input id="day" type="range" min="1" max="49" value="35" aria-label="Bird age in days">
+</div>
+</section>
+
+<main class="band"><div class="wrap grid">
+<div>
+<h2>At this bird age</h2>
+<div class="kpis" id="kpis"></div>
+<div class="fig" id="f1"><svg role="img" aria-label="House airflow against scrubber capacity over the flock"></svg></div>
+<p class="figcap">House exhaust airflow (blue) against the scrubber bank's capacity (dashed). Air above the line bypasses untreated (shaded).</p>
+<div class="fig" id="f2"><svg role="img" aria-label="Removal efficiency and overall capture over the flock"></svg></div>
+<p class="figcap">Removal efficiency of the air that is treated (orange) and capture of the whole house's NH₃ (blue).</p>
+<div class="tot" id="tot"></div>
+<p class="small" id="loc"></p>
+</div>
+
+<div>
+<h2>Design and season</h2>
+<div class="ctrl">
+<div><div class="small" style="margin-bottom:6px">Season profile (Moore et al. 2011 ventilation)</div>
+<div class="seg" id="season" role="group" aria-label="Season">
+<button data-s="cold" aria-pressed="false">Cold</button><button data-s="mild" aria-pressed="false">Mild</button><button data-s="hot" aria-pressed="true">Hot</button></div></div>
+<div class="row"><label for="mods">Spray modules</label><input id="mods" type="range" min="10" max="80" step="1" value="30"><output id="modsv" class="num">30</output></div>
+<div class="row"><label for="stg">Spray stages</label><input id="stg" type="range" min="1" max="3" step="1" value="3"><output id="stgv" class="num">3</output></div>
+<div class="row"><label for="pr">Nozzle pressure</label><input id="pr" type="range" min="0.21" max="0.62" step="0.01" value="0.62"><output id="prv" class="num">0.62 MPa</output></div>
+<button id="reset" style="justify-self:start">Reset to base design</button>
+</div>
+
+<div class="chem">
+<h2>What happens in each module</h2>
+<ol>
+<li>Acid droplets from the PJ40 nozzles fall through the rising exhaust air. NH₃ crosses the gas film into the droplets; gas-side transfer controls the rate.
+<span class="eq" id="kya">Kya = 3916 · Q<sub>L</sub><sup>0.85</sup> · D<sub>32</sub><sup>−1.30</sup> · C<sup>−0.21</sup></span></li>
+<li>In the drop, ammonia meets acid at pH 3 and is protonated at once, so its back-pressure is nil:
+<span class="eq">NH₃(aq) + H⁺ → NH₄⁺</span></li>
+<li>Overall reaction in the recirculating liquid:
+<span class="eq">2 NH₃ + H₂SO₄ → (NH₄)₂SO₄</span></li>
+<li>Plug flow of gas through the contact height z = 1.65 m gives the removal efficiency:
+<span class="eq" id="etaeq">η = 1 − exp(−Kya·z/G)</span></li>
+<li>A pH controller doses H₂SO₄ to hold pH 3. Ammonium builds up to 3 mol N/L (about 200 g/L ammonium sulphate), then a draw-off sends solution to the product tank and make-up water replaces it and the evaporation.</li>
+</ol>
+</div>
+</div>
+</div></main>
+
+<section class="band" style="padding-top:0"><div class="wrap">
+<h2>Stream table, continuous process</h2>
+<p class="small" style="margin:0 0 10px" id="stcap"></p>
+<table class="stack" id="streams"><thead><tr><th>Stream</th><th>From → to</th><th class="r">Flow</th><th class="r">Composition</th><th class="r">NH₃ or N</th></tr></thead><tbody></tbody></table>
+<p class="small" style="margin-top:16px">Model ported from nh3_model.m v9: emission 0.031 g NH₃/bird/d per day of age on used litter (Wheeler et al. 2006; Gates et al. 2008); daily airflow shape of Moore et al. 2011, Fig. 2A; spray Kya correlation and module geometry of Hadlocon et al. 2015c (0.356 m column, 4 m/s maximum). With the base design it reproduces the paper's flock-weighted capture: US 68.2%, Gulf 44.3%, developing 45.9%. The 3D house is drawn shorter than a real 155 m house, and one bird stands for about 23. Bird size follows an approximate broiler growth curve (about 40 g at hatch to the model's 2.5 kg at day 49; size scales with the cube root of weight).</p>
+</div></section>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+{
+// ---------- model (port of nh3_model.m v9, spray scrubber) ----------
+const S=[0.15,0.25,0.30,0.33,0.30,0.30,0.38,0.38,0.42,0.38,0.45,0.52,0.62,0.58,0.68,0.88,0.90,0.83,0.90,0.95,0.92,0.65,0.82,0.98,0.80,1.02,1.30,1.42,1.50,1.55,1.45,1.72,1.75,2.10,2.00,1.72,1.75,1.75,2.08,1.62,1.62,1.60,1.70,1.80,2.00,2.05,1.90,1.95,2.25];
+const SM=S.reduce((a,b)=>a+b)/S.length;
+const QM={cold:0.59e6,mild:1.31e6,hot:2.50e6},TS={cold:20,mild:25,hot:31};
+const BIRDS=25000,MNH3=17.031,MAC=98.079,MAS=132.14,DCOL=0.356,VMAX=4,Z=1.65;
+const lerp1=(x,xs,ys)=>{for(let i=0;i<xs.length-1;i++)if(x<=xs[i+1])return ys[i]+(ys[i+1]-ys[i])*(x-xs[i])/(xs[i+1]-xs[i]);return ys.at(-1)};
+const st={season:'hot',n:30,stages:3,P:0.62,day:35,playing:false};
+function point(d,season,n,stages,P){
+  const T=TS[season],Vm=8.314462*(T+273.15)/101325,A=n*Math.PI/4*DCOL**2,Qcap=A*VMAX*86400;
+  const E=0.031*d*BIRDS/1000,Q=QM[season]*S[d-1]/SM;
+  const C=(E*1000/MNH3)/(Q/Vm)*1e6,Qt=Math.min(Q,Qcap),f=Qt/Q,v=Qt/86400/A,G=v/Vm;
+  const QL1=lerp1(P,[0.21,0.41,0.62],[15.31,21.64,26.51]),QL=QL1*stages,D32=lerp1(P,[0.21,0.41,0.62],[122,100,90]);
+  const K=3916*QL**0.85*D32**-1.3*C**-0.21,eta=1-Math.exp(-K*Z/G),cap=E*f*eta;
+  return {d,E,Q,Qcap,C,Qt,f,v,G,K,QL1,QL,D32,eta,cap,acid:cap*MAC/(2*MNH3),as:cap*MAS/(2*MNH3),
+    prodL:cap*1000/MNH3/3,evapL:Qt/1000,recirc:QL1*stages*n*60/1000,Cout:C*(1-eta),T,
+    outppm:(C*(1-f)+C*(1-eta)*f)};
+}
+function flock(season,n,stages,P){const r=[];for(let d=1;d<=49;d++)r.push(point(d,season,n,stages,P));return r}
+let F=flock(st.season,st.n,st.stages,st.P);
+const sum=(a,k)=>a.reduce((s,x)=>s+x[k],0);
+// approximate broiler growth curve (kg live weight), ending at the model's 2.5 kg market weight
+const WD=[0,7,14,21,28,35,42,49],WK=[0.042,0.17,0.42,0.80,1.25,1.70,2.12,2.50];
+const weight=d=>lerp1(d,WD,WK);
+const fmt=(x,dp=0)=>x.toLocaleString('en-US',{minimumFractionDigits:dp,maximumFractionDigits:dp});
+
+// ---------- UI refs ----------
+const $=id=>document.getElementById(id);
+const kpis=$('kpis'),tot=$('tot'),loc=$('loc');
+function updateText(){
+  const p=F[st.day-1];
+  $('dayv').textContent='Day '+st.day+' · '+(weight(st.day)<1?fmt(weight(st.day)*1000)+' g':fmt(weight(st.day),2)+' kg');
+  kpis.innerHTML=[
+   ['big',fmt(100*p.f*p.eta,0)+'%','of the house\'s NH₃ captured today'],
+   ['',fmt(p.Q/24)+' m³/h','house exhaust airflow'],
+   ['',fmt(p.C,1)+' ppm','NH₃ in the exhaust'],
+   ['',fmt(100*p.f,0)+'%','of the air treated (rest bypasses)'],
+   ['',fmt(100*p.eta,1)+'%','removal in the treated air'],
+   ['',fmt(p.v,2)+' m/s','air velocity in each module'],
+   ['',fmt(p.cap,1)+' kg/d','NH₃ captured'],
+   ['',fmt(p.as,1)+' kg/d','ammonium sulphate made']
+  ].map(([c,v,k])=>`<div class="kpi ${c}"><div class="v num">${v}</div><div class="k">${k}</div></div>`).join('');
+  $('kya').innerHTML=`Kya = 3916 · ${fmt(p.QL,1)}<sup>0.85</sup> · ${fmt(p.D32)}<sup>−1.30</sup> · ${fmt(p.C,1)}<sup>−0.21</sup> = ${fmt(p.K,0)} mol s⁻¹ m⁻³`;
+  $('etaeq').textContent=`η = 1 − exp(−${fmt(p.K,0)} × 1.65 / ${fmt(p.G,1)}) = ${fmt(100*p.eta,1)}%`;
+  const E=sum(F,'E'),Cp=sum(F,'cap');
+  tot.innerHTML=[['NH₃ emitted, flock',fmt(E)+' kg'],['NH₃ captured',fmt(Cp)+' kg'],['Capture, flock',fmt(100*Cp/E,1)+'%'],['Ammonium sulphate',fmt(sum(F,'as'))+' kg'],['H₂SO₄ used',fmt(sum(F,'acid'))+' kg'],['Product solution',fmt(sum(F,'prodL')/1000,1)+' m³'],['Days with bypass',F.filter(x=>x.f<0.999).length+' of 49']]
+   .map(([k,v])=>`<div>${k}<b>${v}</b></div>`).join('');
+  const mix={'US':[.4,.4,.2],'Gulf (Saudi Arabia)':[0,1/3,2/3],'Developing':[0,.4,.6]};
+  const R={};for(const s of ['cold','mild','hot']){const f=flock(s,st.n,st.stages,st.P);R[s]=[sum(f,'E'),sum(f,'cap')]}
+  loc.textContent='Year-round capture with this design, weighting the seasons as the paper does: '+Object.entries(mix).map(([k,m])=>{const e=m[0]*R.cold[0]+m[1]*R.mild[0]+m[2]*R.hot[0],c=m[0]*R.cold[1]+m[1]*R.mild[1]+m[2]*R.hot[1];return k+' '+fmt(100*c/e,1)+'%'}).join(', ')+'.';
+  // streams
+  $('stcap').textContent=`Day ${st.day}, ${st.season} season, ${st.n} modules × ${st.stages} stages at ${st.P.toFixed(2)} MPa. Exhaust at ${p.T} °C.`;
+  const rows=[
+   ['var(--nh3)','1 House exhaust','Fans → plenum',fmt(p.Q/24)+' m³/h',fmt(p.C,1)+' ppm NH₃',fmt(p.E,1)+' kg NH₃/d'],
+   ['var(--air)','2 To scrubber','Plenum → module bank',fmt(p.Qt/24)+' m³/h',fmt(p.C,1)+' ppm NH₃',fmt(p.E*p.f,1)+' kg NH₃/d'],
+   ['var(--nh3)','3 Bypass','Plenum → atmosphere',fmt((p.Q-p.Qt)/24)+' m³/h',fmt(p.C,1)+' ppm, untreated',fmt(p.E*(1-p.f),1)+' kg NH₃/d'],
+   ['var(--air)','4 Treated air','Mist eliminator → atmosphere',fmt(p.Qt/24)+' m³/h',fmt(p.Cout,2)+' ppm NH₃',fmt(p.E*p.f*(1-p.eta),2)+' kg NH₃/d'],
+   ['var(--acid)','5 Recirculating acid','Tank → pump → nozzles → sump',fmt(p.recirc)+' L/min','pH 3, up to 3 mol N/L','takes up '+fmt(p.cap,1)+' kg NH₃/d'],
+   ['var(--acid)','6 Sulphuric acid','Acid tank → recirculation tank',fmt(p.acid,1)+' kg/d','H₂SO₄ (as 100%)','—'],
+   ['var(--air)','7 Make-up water','Water tank → recirculation tank','about '+fmt(p.evapL+p.prodL)+' L/d','evaporation '+fmt(p.evapL)+' L/d + product water','—'],
+   ['var(--prod)','8 Product draw-off','Recirculation tank → product tank',fmt(p.prodL)+' L/d','≈200 g/L (NH₄)₂SO₄; '+fmt(p.as,1)+' kg/d',fmt(p.cap*14.007/MNH3,1)+' kg N/d']
+  ];
+  document.querySelector('#streams tbody').innerHTML=rows.map(r=>`<tr><td><span class="sw" style="background:${r[0]}"></span>${r[1]}</td><td>${r[2]}</td><td class="r num">${r[3]}</td><td class="r">${r[4]}</td><td class="r num">${r[5]}</td></tr>`).join('');
+  drawCharts();
+}
+
+// ---------- charts ----------
+function chart(el,series,ymax,yfmt,extra){
+  const s=el.querySelector('svg'),W=s.clientWidth,H=s.clientHeight;if(!W)return;
+  const m={l:W<520?40:56,r:12,t:10,b:26},iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const X=d=>m.l+(d-1)/48*iw,Y=v=>m.t+ih-(v/ymax)*ih;
+  const css=getComputedStyle(document.documentElement),mute=css.getPropertyValue('--mute'),line=css.getPropertyValue('--line');
+  let g='';for(let i=0;i<=4;i++){const v=ymax*i/4;g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${line}"/><text x="${m.l-6}" y="${Y(v)+4}" text-anchor="end" font-size="12" fill="${mute}">${yfmt(v)}</text>`}
+  for(const d of [1,7,14,21,28,35,42,49])g+=`<text x="${X(d)}" y="${H-6}" text-anchor="middle" font-size="12" fill="${mute}">${W<520&&d%14&&d!=49?'':d}</text>`;
+  g+=extra?extra(X,Y,m,ih):'';
+  for(const sr of series)g+=`<polyline fill="none" stroke="${sr.c}" stroke-width="2.2" ${sr.dash?'stroke-dasharray="6 5"':''} points="${sr.v.map((v,i)=>X(i+1)+','+Y(v)).join(' ')}"/>`;
+  g+=`<line x1="${X(st.day)}" x2="${X(st.day)}" y1="${m.t}" y2="${m.t+ih}" stroke="#f0a33a" stroke-width="2"/>`;
+  s.innerHTML=g;
+}
+function drawCharts(){
+  const qmax=Math.max(...F.map(x=>x.Q/24),F[0].Qcap/24)*1.08,qm=Math.ceil(qmax/20000)*20000;
+  chart($('f1'),[{c:'var(--air)',v:F.map(x=>x.Q/24)},{c:'var(--ink)',dash:1,v:F.map(x=>x.Qcap/24)}],qm,v=>(v/1000).toFixed(0)+'k',
+   (X,Y)=>`<path d="M${F.map((x,i)=>X(i+1)+','+Y(Math.max(x.Q,x.Qcap)/24)).join(' L')} L${F.map((x,i)=>X(49-i)+','+Y(F[48-i].Qcap/24)).join(' L')} Z" fill="var(--nh3)" opacity=".25"/>`);
+  chart($('f2'),[{c:'var(--acid)',v:F.map(x=>100*x.eta)},{c:'var(--air)',v:F.map(x=>100*x.f*x.eta)}],100,v=>v.toFixed(0)+'%');
+}
+const ro1=new ResizeObserver(drawCharts);ro1.observe($('f1'));ro1.observe($('f2'));
+
+// ---------- controls ----------
+function recompute(){F=flock(st.season,st.n,st.stages,st.P);updateText();if(window.__rebuild)window.__rebuild()}
+document.querySelectorAll('#season button').forEach(b=>b.addEventListener('click',()=>{st.season=b.dataset.s;document.querySelectorAll('#season button').forEach(x=>x.setAttribute('aria-pressed',x===b));recompute()}));
+$('mods').addEventListener('input',e=>{st.n=+e.target.value;$('modsv').textContent=st.n;recompute()});
+$('stg').addEventListener('input',e=>{st.stages=+e.target.value;$('stgv').textContent=st.stages;recompute()});
+$('pr').addEventListener('input',e=>{st.P=+e.target.value;$('prv').textContent=st.P.toFixed(2)+' MPa';recompute()});
+$('day').addEventListener('input',e=>{st.day=+e.target.value;updateText()});
+$('reset').addEventListener('click',()=>{st.n=30;st.stages=3;st.P=0.62;$('mods').value=30;$('stg').value=3;$('pr').value=0.62;$('modsv').textContent=30;$('stgv').textContent=3;$('prv').textContent='0.62 MPa';recompute()});
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const play=$('play');
+function setPlay(on){st.playing=on;play.textContent=on?'Pause':'Play';play.setAttribute('aria-pressed',on)}
+play.addEventListener('click',()=>setPlay(!st.playing));
+let acc=0;
+updateText();
+
+// ---------- 3D ----------
+const stage=$('stage');
+let ok=false;try{ok=!!window.THREE&&!!document.createElement('canvas').getContext('webgl')}catch(e){}
+if(!ok){$('nogl').style.display='grid'}else{
+const R=new THREE.WebGLRenderer({antialias:true,alpha:true});R.setPixelRatio(Math.min(devicePixelRatio,2));R.shadowMap.enabled=true;
+stage.prepend(R.domElement);
+const scene=new THREE.Scene();scene.fog=new THREE.Fog(0xcfe0ec,70,200);
+const cam=new THREE.PerspectiveCamera(42,1,0.1,400);
+const ctl=new THREE.OrbitControls(cam,R.domElement);ctl.enableDamping=true;ctl.maxPolarAngle=1.5;ctl.minDistance=6;ctl.maxDistance=150;
+scene.add(new THREE.HemisphereLight(0xeaf3ff,0x8c8270,0.7));
+const sun=new THREE.DirectionalLight(0xfff3dd,0.85);sun.position.set(30,60,40);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-70,right:70,top:40,bottom:-40,far:160});scene.add(sun);
+const M=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.8,metalness:.05},o));
+const box=(w,h,d,mat,x,y,z,par=scene)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;par.add(m);return m};
+const cyl=(r,h,mat,x,y,z,par=scene,seg=24)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,seg),mat);m.position.set(x,y,z);m.castShadow=true;par.add(m);return m};
+// ground
+const gnd=new THREE.Mesh(new THREE.PlaneGeometry(600,600),M(0xa89a80));gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
+box(130,0.05,20,M(0x9d9a93),2,0.02,0);
+// ----- broiler house: x -40..20, z -6..6
+const X0=-40,X1=20,HW=6,WH=3,RP=5.2;
+box(60,0.12,12,M(0x8a6a45),-10,0.06,0);
+box(60,WH,0.15,M(0xe9e4da),-10,WH/2,-HW);
+box(60,0.6,0.15,M(0xe9e4da),-10,0.3,HW);
+box(60,WH-0.6,0.06,M(0xd8eefc,{transparent:true,opacity:.12,depthWrite:false}),-10,0.6+(WH-0.6)/2,HW);
+// gable ends
+const gable=new THREE.Shape();gable.moveTo(-HW,WH);gable.lineTo(0,RP);gable.lineTo(HW,WH);gable.lineTo(-HW,WH);
+for(const gx of [X0,X1]){const g=new THREE.Mesh(new THREE.ShapeGeometry(gable),M(0xe9e4da,{side:THREE.DoubleSide}));g.rotation.y=Math.PI/2;g.position.x=gx;scene.add(g)}
+// inlet end wall with evaporative cool pads
+box(0.15,WH,12,M(0xe9e4da),X0,WH/2,0);
+box(0.25,2.2,10.4,M(0xb39a62),X0+0.12,1.4,0);
+for(let z=-5;z<=5;z+=0.5)box(0.28,2.2,0.04,M(0x8e7748),X0+0.12,1.4,z);
+// fan end wall with 8 tunnel fans
+box(0.15,WH,12,M(0xe9e4da),X1,WH/2,0);
+const fans=[];
+for(const fy of [0.95,2.15])for(const fz of [-4.2,-1.4,1.4,4.2]){
+ const h=new THREE.Mesh(new THREE.CylinderGeometry(0.58,0.58,0.35,28,1,true),M(0x9aa3ab,{metalness:.5,side:THREE.DoubleSide}));h.rotation.z=Math.PI/2;h.position.set(X1+0.1,fy,fz);scene.add(h);
+ const hub=new THREE.Group();hub.position.set(X1+0.12,fy,fz);scene.add(hub);
+ for(let k=0;k<3;k++){const b=box(0.04,0.5,0.16,M(0x4a525a,{metalness:.6}),0,0.25,0,hub);const pv=new THREE.Group();pv.add(b);pv.rotation.x=k*2.094;hub.add(pv)}
+ fans.push(hub)}
+// roof (cut-away translucent) + trusses
+const roofMat=M(0xc9ccd0,{transparent:true,opacity:.16,side:THREE.DoubleSide,depthWrite:false});
+const sl=Math.hypot(HW,RP-WH),ang=Math.atan2(RP-WH,HW);
+for(const s of [-1,1]){const r=new THREE.Mesh(new THREE.PlaneGeometry(60,sl),roofMat);r.position.set(-10,(WH+RP)/2,s*HW/2);r.rotation.x=-s*(Math.PI/2-ang);r.rotation.order='YXZ';scene.add(r)}
+const steel=M(0x7c858d,{metalness:.5,roughness:.5});
+for(let x=X0;x<=X1;x+=4){
+ for(const s of [-1,1]){const r=box(0.08,0.08,sl,steel,x,(WH+RP)/2,s*HW/2);r.rotation.x=s*ang}
+ box(0.08,0.08,12,steel,x,WH,0)}
+box(60,0.1,0.1,steel,-10,RP,0);
+// feeder and drinker lines
+for(const z of [-3.6,0,3.6]){const c=cyl(0.05,60,steel,-10,0.55,z);c.rotation.z=Math.PI/2}
+const pan=new THREE.InstancedMesh(new THREE.CylinderGeometry(0.22,0.18,0.08,14),M(0xc23b22),3*28);let pi=0;const dm=new THREE.Object3D();
+for(const z of [-3.6,0,3.6])for(let i=0;i<28;i++){dm.position.set(X0+1.5+i*2.1,0.2,z);dm.updateMatrix();pan.setMatrixAt(pi++,dm.matrix)}scene.add(pan);
+for(const z of [-1.8,1.8]){const c=cyl(0.03,60,M(0xd0d4d8),-10,0.75,z);c.rotation.z=Math.PI/2}
+// birds (instanced)
+const NB=1100,bodyG=new THREE.SphereGeometry(0.16,10,8);bodyG.scale(1.25,0.95,0.9);
+const headG=new THREE.SphereGeometry(0.08,8,6),combG=new THREE.BoxGeometry(0.05,0.06,0.03);
+const bodies=new THREE.InstancedMesh(bodyG,M(0xf7f4ec),NB),heads=new THREE.InstancedMesh(headG,M(0xf7f4ec),NB),combs=new THREE.InstancedMesh(combG,M(0xd2342a),NB);
+bodies.castShadow=true;scene.add(bodies,heads,combs);
+const birds=[];for(let i=0;i<NB;i++){let z;do{z=-5.5+Math.random()*11}while([-3.6,0,3.6].some(c=>Math.abs(z-c)<0.25));birds.push({x:X0+1+Math.random()*58,z,a:Math.random()*6.283,ph:Math.random()*6.283})}
+const CHICK=new THREE.Color(0xf6d65a),FEATH=new THREE.Color(0xf7f4ec);
+function placeBirds(t){const w=weight(st.day),s=1.25*Math.cbrt(w/2.5),y=Math.min(1,Math.max(0,(st.day-4)/18)),cs=Math.min(1,Math.max(0,(st.day-12)/20));
+ bodies.material.color.copy(CHICK).lerp(FEATH,y);heads.material.color.copy(bodies.material.color);
+ for(let i=0;i<NB;i++){const b=birds[i],bob=Math.max(0,Math.sin(t*2+b.ph))*0.06*s,ca=Math.cos(b.a),sa=Math.sin(b.a);
+  dm.position.set(b.x,0.12+0.14*s,b.z);dm.rotation.set(0,b.a,0);dm.scale.set(s,s,s);dm.updateMatrix();bodies.setMatrixAt(i,dm.matrix);
+  dm.position.set(b.x+ca*0.2*s,0.12+0.27*s-bob,b.z-sa*0.2*s);dm.updateMatrix();heads.setMatrixAt(i,dm.matrix);
+  dm.position.y+=0.08*s;dm.scale.set(s*cs+1e-4,s*cs+1e-4,s*cs+1e-4);dm.updateMatrix();combs.setMatrixAt(i,dm.matrix)}
+ bodies.instanceMatrix.needsUpdate=heads.instanceMatrix.needsUpdate=combs.instanceMatrix.needsUpdate=true}
+// ----- exhaust plenum, bypass louvre and header duct
+const galv=M(0xb8bec4,{metalness:.55,roughness:.45});
+const plen=box(3,3.2,11,M(0xb8bec4,{metalness:.5,roughness:.5,transparent:true,opacity:.55,depthWrite:false}),21.6,1.6,0);
+box(2.2,0.5,3,M(0x6d757d,{metalness:.5}),21.6,3.45,0);
+for(let i=0;i<5;i++)box(2.2,0.04,0.12,M(0x3d444b),21.6,3.72,-1.2+i*0.6);
+box(3.2,1.2,2.4,galv,24.6,0.7,0);
+// ----- scrubber bank (rebuilt when modules or stages change)
+const bank=new THREE.Group();scene.add(bank);
+const BX=27,SPX=1.15,SPZ=1.12,COLS=9,CH=4,CY0=0.7;let mods=[],bankEnd=36;
+const glass=M(0xcfe6f7,{transparent:true,opacity:.28,roughness:.1,metalness:.1,depthWrite:false});
+function stageY(k,n){return CY0+CH-0.6-k*1.0}
+function buildBank(){
+ while(bank.children.length)bank.remove(bank.children[0]);mods=[];
+ const n=st.n,rows=Math.ceil(n/COLS);bankEnd=BX+(rows-1)*SPX;
+ box((rows-1)*SPX+1.3,0.55,COLS*SPZ+0.3,M(0x8c4a1c,{metalness:.2}),BX+(rows-1)*SPX/2,0.36,0,bank);
+ const liq=box((rows-1)*SPX+1.2,0.04,COLS*SPZ+0.2,M(0xf08a3c,{roughness:.3}),BX+(rows-1)*SPX/2,0.64,0,bank);liq.castShadow=false;
+ for(let i=0;i<n;i++){const r=Math.floor(i/COLS),c=i%COLS,x=BX+r*SPX,z=-(COLS-1)*SPZ/2+c*SPZ;
+  const m=new THREE.Mesh(new THREE.CylinderGeometry(0.43,0.43,CH,20,1,true),glass);m.position.set(x,CY0+CH/2,z);bank.add(m);
+  cyl(0.45,0.06,steel,x,CY0+0.03,z,bank);
+  const me=cyl(0.45,0.22,M(0x3d444b),x,CY0+CH-0.11,z,bank);
+  for(let k=0;k<st.stages;k++)cyl(0.07,0.12,M(0xd9661f,{metalness:.3}),x,stageY(k),z,bank,10);
+  mods.push({x,z})}
+ const man=M(0xd9661f,{roughness:.5});
+ for(let r=0;r<rows;r++){const p=cyl(0.07,COLS*SPZ,man,BX+r*SPX,CY0+CH+0.35,0,bank);p.rotation.x=Math.PI/2}
+ const h=cyl(0.1,39-BX,man,(BX+39)/2,CY0+CH+0.35,-5.4,bank);h.rotation.z=Math.PI/2;
+ for(let r=0;r<rows;r++){const s=cyl(0.06,0.4,man,BX+r*SPX,CY0+CH+0.35,-5.2,bank);s.rotation.x=Math.PI/2}
+ P.ret[0][0]=bankEnd+0.65;pipe(P.ret,0xa4521c,0.07,bank);
+ makeDrops();place();
+}
+// ----- tanks
+const TX=40;
+const tank=(r,h,col,liqCol,x,z,lvl)=>{const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
+ const shell=new THREE.Mesh(new THREE.CylinderGeometry(r,r,h,32,1,true),M(col,{transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false}));shell.position.y=h/2+0.2;g.add(shell);
+ cyl(r+0.05,0.12,M(0x6d757d,{metalness:.4}),0,h+0.26,0,g,32);cyl(r+0.05,0.2,M(0x6d757d,{metalness:.4}),0,0.1,0,g,32);
+ const l=cyl(r-0.06,1,M(liqCol,{roughness:.3,transparent:true,opacity:.9}),0,0,0,g,32);l.userData.h=h;l.scale.y=h*lvl;l.position.y=0.2+h*lvl/2;return l};
+const recL=tank(1.25,2.6,0xd9661f,0xf08a3c,TX,-3.2,0.7);
+const acidL=tank(0.75,2.2,0x8c2d14,0x9b3216,TX+4,-4.6,0.65);
+const watL=tank(0.75,2.2,0x1557a6,0x6aa6e0,TX+4,-1.8,0.75);
+const prodL=tank(1.4,3.2,0x2e8b3e,0x5cbf6c,TX+4.5,3.6,0.05);
+box(0.9,0.7,0.7,M(0x1557a6,{metalness:.3}),TX,0.55,-5.4);cyl(0.32,0.5,M(0x2b3238,{metalness:.5}),TX,1.1,-5.4);
+box(0.5,0.6,0.25,M(0x2b3238),TX+1.3,2.0,-3.2);
+const pipe=(pts,col,r=0.07,par=scene)=>{for(let i=0;i<pts.length-1;i++){const a=new THREE.Vector3(...pts[i]),b=new THREE.Vector3(...pts[i+1]),L=a.distanceTo(b);if(L<1e-3)continue;const m=cyl(r,L,M(col,{roughness:.5}),0,0,0,par,10);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),b.clone().sub(a).normalize())}};
+const P={
+ ret:[[36.6,0.35,0],[TX-1.6,0.35,0],[TX-1.6,0.35,-3.2],[TX-1.25,0.35,-3.2]],
+ sup:[[TX,0.4,-4.4],[TX,0.55,-5.0],[TX,1.4,-5.4],[TX,CY0+CH+0.35,-5.4],[39,CY0+CH+0.35,-5.4]],
+ acid:[[TX+4,1.2,-3.85],[TX+2.6,1.8,-3.6],[TX+1.2,2.4,-3.3]],
+ wat:[[TX+4,1.2,-2.55],[TX+2.6,1.8,-2.6],[TX+1.2,2.4,-2.9]],
+ prod:[[TX+1.25,0.5,-2.6],[TX+2.4,0.5,-0.6],[TX+2.4,0.5,2.6],[TX+3.1,0.5,3.0]]
+};
+pipe(P.sup,0xd9661f,0.1);pipe(P.acid,0x8c2d14,0.05);pipe(P.wat,0x1557a6,0.05);pipe(P.prod,0x2e8b3e,0.06);
+// flow tokens along pipes
+const along=(pts,u)=>{const seg=[];let T=0;for(let i=0;i<pts.length-1;i++){const l=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1],pts[i+1][2]-pts[i][2]);seg.push(l);T+=l}
+ let d=u*T;for(let i=0;i<seg.length;i++){if(d<=seg[i]||i==seg.length-1){const f=Math.min(1,d/seg[i]);return [0,1,2].map(k=>pts[i][k]+(pts[i+1][k]-pts[i][k])*f)}d-=seg[i]}};
+const tokens=[];const tok=(path,col,n,r)=>{for(let i=0;i<n;i++){const m=new THREE.Mesh(new THREE.SphereGeometry(r,8,6),new THREE.MeshBasicMaterial({color:col}));scene.add(m);tokens.push({m,path,u:i/n})}};
+tok(P.ret,0xffb36b,10,0.11);tok(P.sup,0xffb36b,12,0.13);tok(P.acid,0xff5a2a,4,0.08);tok(P.wat,0x9ccaf4,4,0.08);tok(P.prod,0x7ee08c,6,0.1);
+// ----- particles
+function pts(n,size){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(n*3),3));g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(n*3),3));
+ const p=new THREE.Points(g,new THREE.PointsMaterial({size,vertexColors:true,transparent:true,opacity:.85,depthWrite:false}));scene.add(p);return p}
+const CLEAN=new THREE.Color(0x7fb3e6),AMB=new THREE.Color(0xe8b400),TMP=new THREE.Color();
+const NH=700,hp=pts(NH,0.16),hs=[];for(let i=0;i<NH;i++)hs.push({x:X0+Math.random()*60,y:0.5+Math.random()*3,z:-5.5+Math.random()*11});
+const NE=900,ep=pts(NE,0.2),es=[];
+function spawnE(o){o.by=Math.random()>st.f;o.ph=0;o.x=20.4+Math.random()*2.4;o.y=0.4+Math.random()*2.6;o.z=-5+Math.random()*10;o.m=mods[(Math.random()*mods.length)|0]||{x:30,z:0};o.sp=0.6+Math.random()*0.6;return o}
+let drops,dd=[];
+function makeDrops(){if(drops)scene.remove(drops);dd=[];const per=8*st.stages;drops=pts(st.n*per,0.09);drops.material.color=new THREE.Color(0xffffff);
+ const c=drops.geometry.attributes.color.array;for(let i=0;i<st.n*per;i++){c.set([1,0.6,0.25],i*3);dd.push({m:(i/per)|0,k:i%st.stages,y:Math.random(),a:Math.random()*6.283,r:Math.random()*0.32})}}
+// ----- labels
+const labs=[];const lab=(html,cls,pos,minor)=>{const d=document.createElement('div');d.className='lab '+cls;d.innerHTML=html;stage.appendChild(d);const o={d,p:new THREE.Vector3(...pos),minor};labs.push(o);return o};
+lab('<b>Broiler house</b> · 25,000 birds','air',[-14,RP+0.8,0]);
+lab('Tunnel inlet, evaporative pads','air',[X0,3.4,-4],1);
+lab('8 tunnel exhaust fans','air',[X1,3.6,4.5]);
+const lBy=lab('<b>Bypass</b>, untreated','nh3',[21.6,4.6,0]);
+const lBank=lab('<b>Spray scrubber bank</b>','acid',[31,6.3,0]);
+lab('Mist eliminators','air',[30,5.4,4.6],1);
+lab('Recirculation tank · pH 3','acid',[TX-0.5,3.4,-2.4],1);
+lab('Pump','acid',[TX,1.7,-6.2],1);
+lab('H₂SO₄','acid',[TX+4,2.9,-4.6],1);
+lab('Make-up water','air',[TX+4.6,2.9,-1.6],1);
+lab('<b>Ammonium sulphate</b> product','prod',[TX+4.5,4.0,3.6]);
+// ----- camera views
+const V={all:[[2,30,48],[10,1,0]],house:[[-30,6,14],[-12,1,0]],scrub:[[22,12,20],[32,2.6,-1]],tanks:[[36,9,16],[42,1.6,-0.5]]};
+let tw=null;function view(k){const [p,t]=V[k];tw={p0:cam.position.clone(),t0:ctl.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),u:0}}
+cam.position.set(...V.all[0]);ctl.target.set(...V.all[1]);
+document.querySelectorAll('.views button').forEach(b=>b.addEventListener('click',()=>view(b.dataset.v)));
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();if(w<600&&!tw&&cam.position.z===48){cam.position.set(2,52,84)}}
+const ro2=new ResizeObserver(resize);ro2.observe(stage);
+function place(){const p=F[st.day-1];st.f=p.f;st.eta=p.eta;
+ lBank.d.innerHTML=`<b>Spray scrubber bank</b> · ${st.n} modules × ${st.stages}`;
+ lBy.d.style.display=p.f<0.999?'':'none';
+ const cum=F.slice(0,st.day).reduce((s,x)=>s+x.cap,0)/Math.max(1e-9,sum(F,'cap'))*0.9+0.04;prodL.scale.y=prodL.userData.h*cum;prodL.position.y=0.2+prodL.userData.h*cum/2}
+window.__rebuild=buildBank;buildBank();
+for(const o of es)spawnE(o);for(let i=0;i<NE;i++)es.push(spawnE({}));
+// ----- animate
+let last=performance.now(),t=0,lastDay=-1;
+if(!reduce)setPlay(true);
+function frame(now){const rdt=Math.min(0.5,(now-last)/1000),dt=Math.min(0.05,rdt);last=now;t+=dt;
+ if(st.playing){acc+=dt;if(acc>1.1){acc=0;st.day=st.day>=49?1:st.day+1;$('day').value=st.day;updateText()}}
+ if(lastDay!==st.day){place();placeBirds(t);lastDay=st.day}
+ if(!reduce&&Math.floor(t*10)%3===0)placeBirds(t);
+ const p=F[st.day-1],qn=p.Q/(QM.hot*2.25/SM),cint=Math.min(1,p.C/40);
+ for(const f of fans)f.rotation.x+=dt*(4+40*qn);
+ // house air
+ const hpos=hp.geometry.attributes.position.array,hcol=hp.geometry.attributes.color.array,vx=3+22*qn;
+ for(let i=0;i<NH;i++){const o=hs[i];o.x+=vx*dt;if(o.x>X1-0.3){o.x=X0+0.3;o.y=0.5+Math.random()*3;o.z=-5.5+Math.random()*11}
+  TMP.copy(CLEAN).lerp(AMB,cint*(o.x-X0)/60);hpos.set([o.x,o.y,o.z],i*3);hcol.set([TMP.r,TMP.g,TMP.b],i*3)}
+ hp.geometry.attributes.position.needsUpdate=hp.geometry.attributes.color.needsUpdate=true;
+ // exhaust air
+ const epos=ep.geometry.attributes.position.array,ecol=ep.geometry.attributes.color.array,sp=2.5+10*qn;
+ for(let i=0;i<NE;i++){const o=es[i];let c=cint,s=sp*o.sp*dt;
+  if(o.by){if(o.ph===0){o.x+=(21.6-o.x)*Math.min(1,s*0.8);o.z+=(0-o.z)*Math.min(1,s*0.4);o.y+=s;if(o.y>3.7)o.ph=1}else{o.y+=s;o.x+=s*0.3;if(o.y>11)spawnE(o)}}
+  else if(o.ph===0){o.x+=s;o.y+=(0.7-o.y)*Math.min(1,s);o.z+=(0-o.z)*Math.min(1,s*0.5);if(o.x>25.6){o.ph=1}}
+  else if(o.ph===1){o.x+=(o.m.x-o.x)*Math.min(1,s*0.9);o.z+=(o.m.z-o.z)*Math.min(1,s*0.9);if(Math.abs(o.x-o.m.x)<0.15&&Math.abs(o.z-o.m.z)<0.15){o.ph=2;o.y=CY0+0.1;o.z=o.m.z+(Math.random()-.5)*0.5;o.x=o.m.x+(Math.random()-.5)*0.5}}
+  else if(o.ph===2){o.y+=s*0.7;const u=Math.min(1,(o.y-CY0)/CH);c=cint*(1-st.eta*u);if(o.y>CY0+CH){o.ph=3}}
+  else{o.y+=s*0.7;c=cint*(1-st.eta);if(o.y>CY0+CH+5)spawnE(o)}
+  if(o.ph===3||o.ph===2){}else if(!o.by&&o.ph<2)c=cint;
+  TMP.copy(CLEAN).lerp(AMB,c);epos.set([o.x,o.y,o.z],i*3);ecol.set([TMP.r,TMP.g,TMP.b],i*3)}
+ ep.geometry.attributes.position.needsUpdate=ep.geometry.attributes.color.needsUpdate=true;
+ // spray droplets
+ if(drops){const a=drops.geometry.attributes.position.array;for(let i=0;i<dd.length;i++){const o=dd[i],m=mods[o.m];if(!m)continue;o.y+=dt*0.9;if(o.y>1)o.y-=1;
+  const y0=stageY(o.k),y=y0-o.y*(y0-CY0);a.set([m.x+Math.cos(o.a)*o.r*o.y*1.3,y,m.z+Math.sin(o.a)*o.r*o.y*1.3],i*3)}drops.geometry.attributes.position.needsUpdate=true}
+ // pipe tokens
+ for(const k of tokens){const rate=k.path===P.acid?Math.min(1,p.acid/60):k.path===P.prod?Math.min(1,p.prodL/400):k.path===P.wat?Math.min(1,(p.evapL+p.prodL)/2500):0.8;
+  k.u=(k.u+dt*0.25*rate)%1;k.m.visible=rate>0.005;k.m.position.set(...along(k.path,k.u))}
+ if(tw){tw.u=Math.min(1,tw.u+rdt*1.2);const e=tw.u<.5?2*tw.u*tw.u:1-(-2*tw.u+2)**2/2;cam.position.lerpVectors(tw.p0,tw.p1,e);ctl.target.lerpVectors(tw.t0,tw.t1,e);if(tw.u>=1)tw=null}
+ ctl.update();R.render(scene,cam);
+ const w=stage.clientWidth,h=stage.clientHeight,v=new THREE.Vector3();
+ for(const l of labs){const dist=cam.position.distanceTo(l.p);v.copy(l.p).project(cam);const vis=v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05&&!(l.minor&&dist>30)&&dist<110;if(l.d.style.display==='none'&&l===lBy)continue;l.d.style.visibility=vis?'visible':'hidden';l.d.style.transform=`translate(${(v.x*.5+.5)*w}px,${(-v.y*.5+.5)*h}px) translate(-50%,-100%)`}
+ requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+}
+}
+</script>
+</body></html>
